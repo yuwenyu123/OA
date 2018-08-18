@@ -1,21 +1,43 @@
 import React, { Component } from 'react';
-
-import AppHome from './components/pages/home'
-
-import { Route, NavLink } from 'react-router-dom'
+import { withRouter } from 'react-router-dom'
+import connect from './modules/connect'
+import SpinLoaidng from './components/SpinLoading'
 
 class App extends Component {
+  state () {
+    isLoading: false
+  }
+  componentWillReceiveProps (props) {
+    let { pathname } = props.location
+    if (pathname !== this.props.location.pathname && pathname !== 'login') {
+      this.checkLogin(this.props)
+    }
+  }
+  componentWillMount () {
+    this.checkLogin(this.props)
+    this.bus.on('change-loading', () => {
+      this.setState({
+        isLoading: !this.state.isLoading
+      })
+    })
+  }
+  checkLogin (props) {
+    let { commons, history } = this.props
+    if (props.location.pathname !== 'login') {
+      if (!commons.user_state) {
+        history.replace('/login')
+      }
+    }
+  }
   render () {
+    let { isLoading } = this.state
     return (
       <div className="App">
-        {/* <NavLink exact to={'/'}  >首页</NavLink>
-        &nbsp;&nbsp;&nbsp;
-          <NavLink to={'/more'}  >更多</NavLink>
-        <hr /> */}
-        <Route exact path="/" component={AppHome} />
+        {this.props.children}
+        <SpinLoaidng loading={isLoading} />
       </div>
     );
   }
 }
 
-export default App;
+export default withRouter(connect(App));
